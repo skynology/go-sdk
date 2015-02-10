@@ -21,4 +21,8 @@ _testmain.go
 
 *.exe
 *.test
+<<<<<<< HEAD
 *.prof
+=======
+*.prof
+>>>>>>> 47e756a1ba43eecc97cb545349de51ca76fec884
