@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-#Skynology Objective-C SDK
+#Skynology GO SDK
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE.md)
 
 
@@ -30,7 +29,4 @@ go get -u github.com/skynology/go-sdk
 
 ## 代码许可
 This SDK is released under the MIT license. See the [LICENSE](https://github.com/skynology/objc-sdk/blob/master/LICENSE) file for more details.
-=======
-# go-sdk
-skynology golang sdk
->>>>>>> 47e756a1ba43eecc97cb545349de51ca76fec884
+
