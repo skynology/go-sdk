@@ -64,25 +64,25 @@ func (obj *Object) RemoveValueFromArrayFromList(field string, value []interface{
 }
 
 func (obj *Object) SetReadAccessByUserId(userId string, access bool) *Object {
-	obj.setAccessControl(userId, "read", access)
+	obj.setAccessControl(userId, AccessControlTypeRead, access)
 	return obj
 }
 func (obj *Object) SetWriteAccessByUserId(userId string, access bool) *Object {
-	obj.setAccessControl(userId, "write", access)
+	obj.setAccessControl(userId, AccessControlTypeWrite, access)
 	return obj
 }
 
 func (obj *Object) SetReadAccessByRoleName(roleName string, access bool) *Object {
 	roleName = "role:" + roleName
-	obj.setAccessControl(roleName, "read", access)
+	obj.setAccessControl(roleName, AccessControlTypeRead, access)
 	return obj
 }
 func (obj *Object) SetWriteAccessByRoleName(roleName string, access bool) *Object {
 	roleName = "role:" + roleName
-	obj.setAccessControl(roleName, "write", access)
+	obj.setAccessControl(roleName, AccessControlTypeWrite, access)
 	return obj
 }
-func (obj *Object) setAccessControl(key string, typ string, value bool) {
+func (obj *Object) setAccessControl(key string, typ AccessControlType, value bool) {
 	var acl ACL
 	var item ACLItem
 	acl, ok := obj.changedData["ACL"].(ACL)
@@ -93,9 +93,9 @@ func (obj *Object) setAccessControl(key string, typ string, value bool) {
 	if !ok {
 		item = ACLItem{}
 	}
-	if typ == "read" {
+	if typ == AccessControlTypeRead {
 		item.Read = value
-	} else if typ == "write" {
+	} else if typ == AccessControlTypeWrite {
 		item.Write = value
 	}
 	acl[key] = item

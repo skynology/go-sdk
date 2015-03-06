@@ -1,5 +1,6 @@
 #Skynology GO SDK
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE.md)
+[![Build Status](https://travis-ci.org/skynology/go-sdk.svg)](https://travis-ci.org/skynology/go-sdk)
 
 
 ## 安装

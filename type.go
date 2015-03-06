@@ -7,6 +7,7 @@ import (
 // API HTTP method
 // Can be GET, POST, PUT or DELETE
 type Method string
+type AccessControlType byte
 
 // Object ACL attribute type
 type ACLItem struct {
@@ -14,6 +15,11 @@ type ACLItem struct {
 	Write bool `json:"write"`
 }
 type ACL map[string]ACLItem
+
+const (
+	AccessControlTypeRead AccessControlType = iota
+	AccessControlTypeWrite
+)
 
 // API params.
 //
