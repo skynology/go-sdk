@@ -31,6 +31,19 @@ type Params map[string]interface{}
 // Skynology API call result.
 type Result map[string]interface{}
 
+// 微信配置
+type weixinParams struct {
+	Id   string `json:"id"`
+	Type string `json:"type"`
+}
+
+func (p *weixinParams) IsValid() bool {
+	if p.Id == "" || p.Type == "" {
+		return false
+	}
+	return true
+}
+
 // Skynology API error.
 type APIError struct {
 	Code        int    `json:"code"`
@@ -48,6 +61,7 @@ type App struct {
 	baseURL        string
 	dataDir        string
 	currentUser    *User
+	weixinParams   *weixinParams
 }
 
 // query function
