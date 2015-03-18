@@ -131,6 +131,6 @@ func (app *App) SetBaseURL(url string) {
 // 设置微信配置
 // id : 在管理后台绑定完微信公众号后由系统产生的Id
 // typ: 公众号类型, 如corp, mp等.
-func (app *App) SetWeixinParams(id string, typ string) {
+func (app *App) InitWeixin(id string, typ string) {
 	app.weixinParams = &weixinParams{Id: id, Type: typ}
 }
