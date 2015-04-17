@@ -9,6 +9,7 @@ func NewApp(appId, appKey string) *App {
 		ApplicationKey: appKey,
 		baseURL:        "https://skynology.com/api/1.0",
 		dataDir:        "./",
+		weixinParams:   new(weixinParams),
 	}
 }
 
@@ -19,6 +20,7 @@ func NewAppWithMasterKey(appId, masterKey string) *App {
 		MasterKey:     masterKey,
 		baseURL:       "https://skynology.com/api/1.0",
 		dataDir:       "./",
+		weixinParams:  new(weixinParams),
 	}
 }
 

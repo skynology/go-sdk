@@ -1,6 +1,7 @@
 package skynology
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -52,6 +53,10 @@ type APIError struct {
 	Description string `json:"description,omitempty"`
 }
 
+func (a *APIError) String() string {
+	return fmt.Sprintf("code:%v, error:%s, description:%s", a.Code, a.Error, a.Description)
+}
+
 // Skynology GO SDK app
 type App struct {
 	ApplicationId  string
@@ -74,6 +79,7 @@ type Query struct {
 	where        map[string]interface{}
 	order        []string
 	field        []string
+	include      []string
 }
 
 // object type
@@ -87,6 +93,9 @@ type Object struct {
 	data         map[string]interface{}
 	changedData  map[string]interface{}
 	baseURL      string
+
+	// 特殊API需额外URL时, 如更新数组字段内对象时, 设置此
+	addtionalURL string
 }
 
 type User struct {

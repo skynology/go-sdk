@@ -48,6 +48,11 @@ func (query *Query) Contains(field string, value string) *Query {
 	return query
 }
 
+func (query *Query) Match(field string, value interface{}) *Query {
+	query.where[field] = map[string]interface{}{"$elemMatch": value}
+	return query
+}
+
 func (query *Query) Exists(field string, exist bool) *Query {
 	query.where[field] = map[string]interface{}{"$exists": exist}
 	return query
@@ -65,6 +70,22 @@ func (query *Query) Skip(value int) *Query {
 
 func (query *Query) Take(value int) *Query {
 	query._take = value
+	return query
+}
+
+func (query *Query) Include(field string) *Query {
+	query.include = append(query.include, field)
+	return query
+}
+
+//
+func (query *Query) IncludeWithFields(field string, includeFields ...string) *Query {
+	includes := []string{}
+	includes = append(includes, includeFields...)
+	fields := strings.Join(includes, "|")
+	key := field + "." + fields
+	query.include = append(query.include, key)
+
 	return query
 }
 
@@ -99,7 +120,7 @@ func (query *Query) Select(fields ...string) *Query {
 func (query *Query) GetObject(objectId string) (Object, *APIError) {
 	var result Object
 
-	url := fmt.Sprintf("%s/resources/%s/%s", query.app.baseURL, query.ResourceName, objectId)
+	url := fmt.Sprintf("%s/resources/%s/%s?%s", query.app.baseURL, query.ResourceName, objectId, query.getQueryString())
 	m, err := query.app.sendGetRequest(url)
 	if err != nil {
 		return result, err
@@ -153,6 +174,10 @@ func (query *Query) getQueryString() string {
 	}
 
 	search += "&take=" + strconv.Itoa(query._take)
+
+	if len(query.include) > 0 {
+		search += ("&include=" + strings.Join(query.include, ","))
+	}
 
 	if b, err := json.Marshal(query.where); err == nil {
 		where := url.QueryEscape(string(b))

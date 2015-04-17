@@ -44,6 +44,12 @@ func NewACL(data map[string]interface{}) (ACL, error) {
 	return acl, nil
 }
 
+// 调用自定义函数
+func (app *App) Call(url string, data interface{}) (map[string]interface{}, *APIError) {
+	_url := fmt.Sprintf("%s/functions/%s", app.baseURL, url)
+	result, err := app.sendPostRequest(_url, data)
+	return result, err
+}
 func (app *App) getRequestSign() (string, error) {
 	if app.ApplicationId == "" || app.ApplicationKey == "" && app.MasterKey == "" {
 		return "", errors.New("please set `APPLICATION_ID` and `APPLICATION_KEY`")
@@ -55,8 +61,6 @@ func (app *App) getRequestSign() (string, error) {
 	if app.MasterKey != "" {
 		signStr = fmt.Sprintf("%v%s", now, app.MasterKey)
 	}
-
-	fmt.Println(signStr)
 
 	result := fmt.Sprintf("%v,%s", now, crypto.GetMD5(signStr))
 	if app.MasterKey != "" {
@@ -85,6 +89,12 @@ func (app *App) getHttpRequest(method string, url string, body io.Reader) (*http
 	request.Header.Add(X_REQUEST_SIGN_HEADER, sign)
 	if app.SessionToken != "" {
 		request.Header.Add(X_SESSION_TOKEN_HEADER, app.SessionToken)
+	}
+	if app.weixinParams.Id != "" {
+		request.Header.Add(X_WEIXIN_ID_HEADER, app.weixinParams.Id)
+	}
+	if app.weixinParams.Type != "" {
+		request.Header.Add(X_WEIXIN_TYPE_HEADER, app.weixinParams.Type)
 	}
 
 	return request, nil
@@ -119,6 +129,7 @@ func (app *App) sendPostRequest(url string, data interface{}) (map[string]interf
 
 	return app.sendRequest(req)
 }
+
 func (app *App) sendPutRequest(url string, data interface{}) (map[string]interface{}, *APIError) {
 
 	b, err := json.Marshal(data)
@@ -135,7 +146,7 @@ func (app *App) sendPutRequest(url string, data interface{}) (map[string]interfa
 	return app.sendRequest(req)
 }
 func (app *App) sendRequest(req *http.Request) (map[string]interface{}, *APIError) {
-	var apiError *APIError
+	var apiError APIError
 	var m map[string]interface{}
 
 	//fmt.Println("headers:", req.Header)
@@ -155,16 +166,17 @@ func (app *App) sendRequest(req *http.Request) (map[string]interface{}, *APIErro
 		return m, &APIError{Code: -1, Error: fmt.Sprintf("cannot read skynology response. %v", err.Error())}
 	}
 
-	//fmt.Println("query response data:", string(buf.Bytes()))
-
 	if response.StatusCode >= 200 && response.StatusCode < 300 {
 		err = json.Unmarshal(buf.Bytes(), &m)
+		if err != nil {
+			return m, &APIError{Code: -1, Error: fmt.Sprintf("cannot read skynology response. %v", err.Error())}
+		}
 	} else {
 		err = json.Unmarshal(buf.Bytes(), &apiError)
-	}
-
-	if err != nil {
-		return m, &APIError{Code: -1, Error: fmt.Sprintf("cannot read skynology response. %v", err.Error())}
+		if err != nil {
+			return m, &APIError{Code: -1, Error: fmt.Sprintf("cannot read skynology response. %v", err.Error())}
+		}
+		return m, &apiError
 	}
 
 	return m, nil

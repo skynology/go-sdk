@@ -10,10 +10,33 @@ func (obj *Object) Get(field string) interface{} {
 	return obj.data[field]
 }
 
+func (obj *Object) GetMap(field string) (result map[string]interface{}) {
+	if m, ok := obj.Get(field).(map[string]interface{}); ok {
+		return m
+	}
+
+	return
+}
+
 // set field value
 func (obj *Object) Set(field string, value interface{}) *Object {
 	obj.changedData[field] = value
 	return obj
+}
+
+// 设置多个
+func (obj *Object) SetMulti(data map[string]interface{}) *Object {
+	for k, v := range data {
+		obj.Set(k, v)
+	}
+
+	return obj
+}
+
+// 返回查到的数据
+// 不包括修改的内容
+func (obj *Object) Map() map[string]interface{} {
+	return obj.data
 }
 
 // increment the give amount
@@ -63,6 +86,17 @@ func (obj *Object) RemoveValueFromArrayFromList(field string, value []interface{
 	return obj
 }
 
+// update element in array
+func (obj *Object) UpdateObjectInArray(query map[string]interface{}, data map[string]interface{}) *Object {
+	// just allow update element,
+	// so clear all another updates
+	obj.changedData = map[string]interface{}{}
+	obj.changedData["query"] = query
+	obj.changedData["data"] = data
+	obj.addtionalURL = "/array"
+	return obj
+}
+
 func (obj *Object) SetReadAccessByUserId(userId string, access bool) *Object {
 	obj.setAccessControl(userId, AccessControlTypeRead, access)
 	return obj
@@ -105,11 +139,17 @@ func (obj *Object) Save() (bool, *APIError) {
 	var m map[string]interface{}
 	var err *APIError
 
+	url := fmt.Sprintf("%s/resources/%s", obj.app.baseURL, obj.ResourceName)
 	if obj.ObjectId != "" {
-		url := fmt.Sprintf("%s/resources/%s/%s", obj.app.baseURL, obj.ResourceName, obj.ObjectId)
+		url += "/" + obj.ObjectId
+	}
+	if obj.addtionalURL != "" {
+		url += obj.addtionalURL
+	}
+
+	if obj.ObjectId != "" {
 		m, err = obj.app.sendPutRequest(url, obj.changedData)
 	} else {
-		url := fmt.Sprintf("%s/resources/%s", obj.app.baseURL, obj.ResourceName)
 		m, err = obj.app.sendPostRequest(url, obj.changedData)
 	}
 
