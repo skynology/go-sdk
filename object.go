@@ -97,6 +97,14 @@ func (obj *Object) UpdateObjectInArray(query map[string]interface{}, data map[st
 	return obj
 }
 
+// 设置指定用户的读写权限
+// 若以往已经有此用户的ACL信息, 将会被覆盖
+func (obj *Object) SetReadWriteAccessByUserId(userId string, read bool, write bool) *Object {
+	obj.setAccessControl(userId, AccessControlTypeRead, read)
+	obj.setAccessControl(userId, AccessControlTypeWrite, write)
+	return obj
+}
+
 func (obj *Object) SetReadAccessByUserId(userId string, access bool) *Object {
 	obj.setAccessControl(userId, AccessControlTypeRead, access)
 	return obj
@@ -106,6 +114,14 @@ func (obj *Object) SetWriteAccessByUserId(userId string, access bool) *Object {
 	return obj
 }
 
+// 用指定角色名来设置读写权限
+// 若以往已经有此数据的ACL信息, 将会被覆盖
+func (obj *Object) SetReadWriteAccessRoleName(roleName string, read bool, write bool) *Object {
+	roleName = "role:" + roleName
+	obj.setAccessControl(roleName, AccessControlTypeRead, read)
+	obj.setAccessControl(roleName, AccessControlTypeWrite, write)
+	return obj
+}
 func (obj *Object) SetReadAccessByRoleName(roleName string, access bool) *Object {
 	roleName = "role:" + roleName
 	obj.setAccessControl(roleName, AccessControlTypeRead, access)
@@ -152,6 +168,8 @@ func (obj *Object) Save() (bool, *APIError) {
 	} else {
 		m, err = obj.app.sendPostRequest(url, obj.changedData)
 	}
+
+	fmt.Println("save object:", m)
 
 	if err != nil {
 		return false, err

@@ -137,6 +137,7 @@ func (query *Query) Find() ([]Object, int, *APIError) {
 	var count int64 = 0
 
 	url := fmt.Sprintf("%s/resources/%s?%s", query.app.baseURL, query.ResourceName, query.getQueryString())
+	fmt.Println("url-->:", url)
 
 	m, err := query.app.sendGetRequest(url)
 	if err != nil {
