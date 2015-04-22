@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/williambao/gocrypto"
@@ -45,11 +46,32 @@ func NewACL(data map[string]interface{}) (ACL, error) {
 }
 
 // 调用自定义函数
-func (app *App) Call(url string, data interface{}) (map[string]interface{}, *APIError) {
-	_url := fmt.Sprintf("%s/functions/%s", app.baseURL, url)
+func (app *App) Func(name string, data interface{}) (map[string]interface{}, *APIError) {
+	_url := fmt.Sprintf("%s/functions/%s", app.baseURL, name)
 	result, err := app.sendPostRequest(_url, data)
 	return result, err
 }
+
+// 调指定url
+// url 不包含通用部分. 如 https://skynology.com/api/1.0/files/fetch, 只传入 'files/fetch' 即可
+func (app *App) Call(url string, method string, data interface{}) (result map[string]interface{}, err *APIError) {
+	_url := fmt.Sprintf("%s/%s", app.baseURL, url)
+	method = strings.ToUpper(method)
+
+	switch method {
+	case "GET":
+		result, err = app.sendGetRequest(_url)
+	case "POST":
+		result, err = app.sendPostRequest(_url, data)
+	case "PUT":
+		result, err = app.sendPutRequest(_url, data)
+	case "DELETE":
+		result, err = app.sendDeleteRequest(_url, data)
+	}
+
+	return
+}
+
 func (app *App) getRequestSign() (string, error) {
 	if app.ApplicationId == "" || app.ApplicationKey == "" && app.MasterKey == "" {
 		return "", errors.New("please set `APPLICATION_ID` and `APPLICATION_KEY`")

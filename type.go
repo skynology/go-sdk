@@ -106,6 +106,13 @@ type User struct {
 	Phone    string
 }
 
+type File struct {
+	Object
+	Key    string
+	Url    string
+	Bucket string
+}
+
 // geoJSON
 type CoordType float64
 type Coordinate [2]CoordType
