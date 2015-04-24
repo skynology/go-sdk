@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
@@ -251,4 +252,115 @@ func (app *App) clearUserFromDisk() error {
 		return err
 	}
 	return nil
+}
+
+// -----------
+
+func GetInt(v interface{}) int {
+	switch reply := v.(type) {
+	case int:
+		return reply
+	case int64:
+		x := int(reply)
+		if int64(x) != reply {
+			return 0
+		}
+		return x
+	case float64:
+		x := int(reply)
+		if float64(x) != reply {
+			return 0
+		}
+		return x
+	case string:
+		n, _ := strconv.ParseInt(reply, 10, 0)
+		return int(n)
+	case []byte:
+		n, _ := strconv.ParseInt(string(reply), 10, 0)
+		return int(n)
+	case nil:
+		return 0
+	default:
+		return 0
+	}
+	return 0
+}
+
+func GetInt64(v interface{}) int64 {
+	switch reply := v.(type) {
+	case int64:
+		return reply
+	case int:
+		return int64(reply)
+	case float64:
+		x := int64(reply)
+		if float64(x) != reply {
+			return 0
+		}
+		return x
+	case string:
+		n, _ := strconv.ParseInt(reply, 10, 64)
+		return n
+	case []byte:
+		n, _ := strconv.ParseInt(string(reply), 10, 64)
+		return n
+	case nil:
+		return 0
+	default:
+		return 0
+	}
+	return 0
+}
+
+func GetFloat64(v interface{}) float64 {
+	switch reply := v.(type) {
+	case int:
+		return float64(reply)
+	case int64:
+		return float64(reply)
+	case string:
+		n, _ := strconv.ParseFloat(reply, 64)
+		return n
+	case []byte:
+		n, _ := strconv.ParseFloat(string(reply), 64)
+		return n
+	case nil:
+		return 0
+	default:
+		return 0
+	}
+	return 0
+}
+func GetString(v interface{}) string {
+	switch reply := v.(type) {
+	case int, int64, float64:
+		return fmt.Sprintf("%v", reply)
+	case string:
+		return reply
+	case []byte:
+		return string(reply)
+	case nil:
+		return ""
+	default:
+		return ""
+	}
+	return ""
+}
+func GetBool(v interface{}) bool {
+
+	switch reply := v.(type) {
+	case int, int64, float64:
+		return reply != 0
+	case string:
+		n, _ := strconv.ParseBool(reply)
+		return n
+	case []byte:
+		n, _ := strconv.ParseBool(string(reply))
+		return n
+	case nil:
+		return false
+	default:
+		return false
+	}
+	return false
 }

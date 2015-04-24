@@ -10,6 +10,29 @@ func (obj *Object) Get(field string) interface{} {
 	return obj.data[field]
 }
 
+func (obj *Object) GetInt(field string) int {
+	v := obj.Get(field)
+	return GetInt(v)
+}
+
+func (obj *Object) GetInt64(field string) int64 {
+	v := obj.Get(field)
+	return GetInt64(v)
+}
+
+func (obj *Object) GetFloat64(field string) float64 {
+	v := obj.Get(field)
+	return GetFloat64(v)
+}
+func (obj *Object) GetString(field string) string {
+	v := obj.Get(field)
+	return GetString(v)
+}
+func (obj *Object) GetBool(field string) bool {
+	v := obj.Get(field)
+	return GetBool(v)
+}
+
 func (obj *Object) GetMap(field string) (result map[string]interface{}) {
 	if m, ok := obj.Get(field).(map[string]interface{}); ok {
 		return m
