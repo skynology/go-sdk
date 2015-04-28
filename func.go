@@ -194,13 +194,12 @@ func (app *App) sendRequest(req *http.Request) (map[string]interface{}, *APIErro
 	if response.StatusCode >= 200 && response.StatusCode < 300 {
 		err = json.Unmarshal(buf.Bytes(), &m)
 		if err != nil {
-			return m, &APIError{Code: -1, Error: fmt.Sprintf("cannot parse response data to json(done). %v", err.Error())}
+			return m, &APIError{Code: -1, Error: fmt.Sprintf(" parse response data to json(done). %v", err.Error())}
 		}
 	} else {
 		err = json.Unmarshal(buf.Bytes(), &apiError)
 		if err != nil {
-
-			return m, &APIError{Code: -1, Error: fmt.Sprintf("cannot arse response data to json(failed). %v", err.Error())}
+			return m, &APIError{Code: -1, Error: fmt.Sprintf("parse response data to json(failed). %v", err.Error())}
 		}
 		return m, &apiError
 	}
