@@ -90,7 +90,7 @@ func (obj *Object) AddValueToArray(field string, value interface{}) *Object {
 
 // add a value to the array field, only if it is not already present in the array
 func (obj *Object) AddUniqueValueToArray(field string, value interface{}) *Object {
-	obj.changedData[field] = map[string]interface{}{"__op": "AddToUnique", "objects": []interface{}{value}}
+	obj.changedData[field] = map[string]interface{}{"__op": "AddUnique", "objects": []interface{}{value}}
 	return obj
 }
 
@@ -108,13 +108,13 @@ func (obj *Object) AddValueToArrayFromList(field string, value []interface{}) *O
 
 // add a values from given list to the field, only if it is not already present in the array
 func (obj *Object) AddUniqueValueToArrayFromList(field string, value []interface{}) *Object {
-	obj.changedData[field] = map[string]interface{}{"__op": "AddToUnique", "objects": value}
+	obj.changedData[field] = map[string]interface{}{"__op": "AddUnique", "objects": value}
 	return obj
 }
 
 // remove value from array field
 func (obj *Object) RemoveValueFromArrayFromList(field string, value []interface{}) *Object {
-	obj.changedData[field] = map[string]interface{}{"__op": "AddToUnique", "objects": value}
+	obj.changedData[field] = map[string]interface{}{"__op": "Remove", "objects": value}
 	return obj
 }
 
