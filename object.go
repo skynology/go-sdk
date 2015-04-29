@@ -109,6 +109,12 @@ func (obj *Object) RemoveValueFromArrayFromList(field string, value []interface{
 	return obj
 }
 
+// remove object from array
+func (obj *Object) RemoveObjectFromArray(field string, query interface{}) *Object {
+	obj.changedData[field] = map[string]interface{}{"__op": "RemoveObject", "query": query}
+	return obj
+}
+
 // update element in array
 func (obj *Object) UpdateObjectInArray(query map[string]interface{}, data map[string]interface{}) *Object {
 	// just allow update element,
