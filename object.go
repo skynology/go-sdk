@@ -10,6 +10,15 @@ func (obj *Object) Get(field string) interface{} {
 	return obj.data[field]
 }
 
+// get []interface{}, if field is empty , return []interface{}
+func (obj *Object) GetArray(field string) (result []interface{}) {
+	v := obj.Get(field)
+	if ret, ok := v.([]interface{}); ok {
+		result = ret
+	}
+	return
+}
+
 func (obj *Object) GetInt(field string) int {
 	v := obj.Get(field)
 	return GetInt(v)
