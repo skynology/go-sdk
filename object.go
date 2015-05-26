@@ -2,6 +2,7 @@ package skynology
 
 import (
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -189,6 +190,39 @@ func (obj *Object) setAccessControl(key string, typ AccessControlType, value boo
 	acl[key] = item
 	obj.changedData["ACL"] = acl
 }
+
+// 检查指定用户和角色是否对当前对象有权限
+func (obj *Object) CheckACL(userId string, roles []string, typ string) bool {
+	acl, err := NewACL(obj.GetMap("ACL"))
+	if err != nil {
+		return false
+	}
+
+	typ = strings.ToLower(typ)
+
+	for k, v := range acl {
+		if k == userId {
+			if typ == "read" && v.Read {
+				return true
+			}
+			if typ == "write" && v.Write {
+				return true
+			}
+		}
+		for _, role := range roles {
+			if k == ("role:" + role) {
+				if typ == "read" && v.Read {
+					return true
+				}
+				if typ == "write" && v.Write {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
 func (obj *Object) Save() (bool, *APIError) {
 	var m map[string]interface{}
 	var err *APIError
