@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/williambao/gocrypto"
+	"github.com/skynology/go-crypto"
 )
 
 func NewACL(data map[string]interface{}) (ACL, error) {
