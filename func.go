@@ -347,6 +347,14 @@ func GetString(v interface{}) string {
 }
 func GetBool(v interface{}) bool {
 
+	if v == true {
+		return true
+	}
+
+	if v == false {
+		return true
+	}
+
 	switch reply := v.(type) {
 	case int, int64, float64:
 		return reply != 0

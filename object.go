@@ -20,6 +20,22 @@ func (obj *Object) GetArray(field string) (result []interface{}) {
 	return
 }
 
+func (obj *Object) GetTime(field string) (result time.Time) {
+	v := obj.GetString(field)
+	if v == "" {
+		return
+	}
+	layout := time.RFC3339Nano
+	if !strings.Contains(v, ".") {
+		layout = time.RFC3339
+	}
+
+	if t, err := time.Parse(layout, v); err == nil {
+		return t
+	}
+	return
+}
+
 func (obj *Object) GetInt(field string) int {
 	v := obj.Get(field)
 	return GetInt(v)
@@ -153,6 +169,11 @@ func (obj *Object) SetWriteAccessByUserId(userId string, access bool) *Object {
 	return obj
 }
 
+func (obj *Object) SetACL(acl ACL) *Object {
+	obj.changedData["ACL"] = acl
+	return obj
+}
+
 // 用指定角色名来设置读写权限
 // 若以往已经有此数据的ACL信息, 将会被覆盖
 func (obj *Object) SetReadWriteAccessRoleName(roleName string, read bool, write bool) *Object {
@@ -274,8 +295,7 @@ func (obj *Object) initData(data map[string]interface{}) {
 	}
 
 	if acl, ok := data["ACL"].(map[string]interface{}); ok {
-		nacl, err := NewACL(acl)
-		if err != nil {
+		if nacl, err := NewACL(acl); err == nil {
 			obj.ACL = nacl
 		}
 	}
