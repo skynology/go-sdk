@@ -1,15 +1,11 @@
 package skynology
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
-	"net/http"
 	"os"
-	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -73,6 +69,13 @@ func (app *App) Call(url string, method string, data interface{}) (result map[st
 	return
 }
 
+// 设置处理事件
+// 可用在私有项目来避免来回http调用
+func (app *App) SetRequestHandler(handler Handler) error {
+	app.handler = handler
+	return nil
+}
+
 func (app *App) getRequestSign() (string, error) {
 	if app.ApplicationId == "" || app.ApplicationKey == "" && app.MasterKey == "" {
 		return "", errors.New("please set `APPLICATION_ID` and `APPLICATION_KEY`")
@@ -93,118 +96,37 @@ func (app *App) getRequestSign() (string, error) {
 	return result, nil
 }
 
-func (app *App) getHttpRequest(method string, url string, body io.Reader) (*http.Request, error) {
-	sign, err := app.getRequestSign()
-	if err != nil {
-		return nil, err
-	}
-
-	request, err := http.NewRequest(method, url, body)
-	if err != nil {
-		return request, err
-	}
-
-	request.Header.Add("Content-Type", "application/json")
-	request.Header.Add("User-Agent", fmt.Sprintf("Skynology-Golang/%v (%v;%v;)", SDK_VERSION, runtime.GOOS, runtime.GOARCH))
-
-	request.Header.Add(X_CLIENT_VERSION_HEADER, fmt.Sprintf("go-%v", SDK_VERSION))
-	request.Header.Add(X_APPLICATION_ID_HEADER, app.ApplicationId)
-	request.Header.Add(X_REQUEST_SIGN_HEADER, sign)
-	if app.SessionToken != "" {
-		request.Header.Add(X_SESSION_TOKEN_HEADER, app.SessionToken)
-	}
-	if app.weixinParams.Id != "" {
-		request.Header.Add(X_WEIXIN_ID_HEADER, app.weixinParams.Id)
-	}
-	if app.weixinParams.Type != "" {
-		request.Header.Add(X_WEIXIN_TYPE_HEADER, app.weixinParams.Type)
-	}
-
-	return request, nil
-}
-
 func (app *App) sendGetRequest(url string) (map[string]interface{}, *APIError) {
-	req, err := app.getHttpRequest("GET", url, nil)
-	if err != nil {
-		return nil, &APIError{Code: -1, Error: err.Error()}
-	}
-	return app.sendRequest(req)
+	return app.sendRequest("GET", url, nil)
 }
 func (app *App) sendDeleteRequest(url string, data interface{}) (map[string]interface{}, *APIError) {
-	req, err := app.getHttpRequest("DELETE", url, nil)
-	if err != nil {
-		return nil, &APIError{Code: -1, Error: err.Error()}
-	}
-	return app.sendRequest(req)
+	return app.sendRequest("DELETE", url, nil)
 }
+
 func (app *App) sendPostRequest(url string, data interface{}) (map[string]interface{}, *APIError) {
-
-	b, err := json.Marshal(data)
-	if err != nil {
-		return nil, &APIError{Code: -1, Error: fmt.Sprintf("marshal json data error:%v", err.Error())}
-	}
-
-	req, err := app.getHttpRequest("POST", url, bytes.NewReader(b))
-	if err != nil {
-		return nil, &APIError{Code: -1, Error: err.Error()}
-	}
-	req.ContentLength = int64(len(b))
-
-	return app.sendRequest(req)
+	return app.sendRequest("POST", url, data)
 }
 
 func (app *App) sendPutRequest(url string, data interface{}) (map[string]interface{}, *APIError) {
+	return app.sendRequest("PUT", url, data)
+}
 
-	b, err := json.Marshal(data)
+func (app *App) sendRequest(method string, url string, data interface{}) (map[string]interface{}, *APIError) {
+	sign, err := app.getRequestSign()
 	if err != nil {
 		return nil, &APIError{Code: -1, Error: fmt.Sprintf("marshal json data error:%v", err.Error())}
 	}
+	params := HandlerRequestParams{}
+	params.AppId = app.ApplicationId
+	params.AppKey = app.ApplicationKey
+	params.MasterKey = app.MasterKey
+	params.RequestSign = sign
+	params.Method = method
+	params.URL = url
+	params.SessionToken = app.SessionToken
+	params.Data = data
 
-	req, err := app.getHttpRequest("PUT", url, bytes.NewReader(b))
-	if err != nil {
-		return nil, &APIError{Code: -1, Error: err.Error()}
-	}
-	req.ContentLength = int64(len(b))
-
-	return app.sendRequest(req)
-}
-func (app *App) sendRequest(req *http.Request) (map[string]interface{}, *APIError) {
-	var apiError APIError
-	var m map[string]interface{}
-
-	//fmt.Println("headers:", req.Header)
-	//fmt.Println("url:", req.URL)
-
-	response, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return m, &APIError{Code: -1, Error: fmt.Sprintf("cannot reach skynology server. %v", err.Error())}
-	}
-
-	defer response.Body.Close()
-
-	buf := &bytes.Buffer{}
-	_, err = io.Copy(buf, response.Body)
-
-	//fmt.Println("response is:", string(buf.Bytes()))
-
-	if err != nil {
-		return m, &APIError{Code: -1, Error: fmt.Sprintf("cannot read skynology response. %v", err.Error())}
-	}
-
-	if response.StatusCode >= 200 && response.StatusCode < 300 {
-		err = json.Unmarshal(buf.Bytes(), &m)
-		if err != nil {
-			return m, &APIError{Code: -1, Error: fmt.Sprintf(" parse response data to json(done). %v", err.Error())}
-		}
-	} else {
-		err = json.Unmarshal(buf.Bytes(), &apiError)
-		if err != nil {
-			return m, &APIError{Code: -1, Error: fmt.Sprintf("parse response data to json(failed). %v", err.Error())}
-		}
-		return m, &apiError
-	}
-
-	return m, nil
+	return app.handler.SendRequest(params)
 }
 
 func (app *App) saveUserToDisk(user *User) error {

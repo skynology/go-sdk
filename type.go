@@ -67,6 +67,7 @@ type App struct {
 	dataDir        string
 	currentUser    *User
 	weixinParams   *weixinParams
+	handler        Handler
 }
 
 // query function
