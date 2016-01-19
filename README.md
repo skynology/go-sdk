@@ -24,7 +24,7 @@ go get -u github.com/skynology/go-sdk
 
 ## 联系我们
 
-* 我们的主页: [上空云](https://www.skynology.com)
+* 我们的主页: [上空云](http://www.skynology.com)
 * 我的开发者中心: [上空云开发者中心](http://developer.skynology.com)
 * 发送电邮: sdk@skynology.com
 

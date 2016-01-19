@@ -50,7 +50,7 @@ func (app *App) Func(name string, data interface{}) (map[string]interface{}, *AP
 }
 
 // 调指定url
-// url 不包含通用部分. 如 https://skynology.com/api/1.0/files/fetch, 只传入 'files/fetch' 即可
+// url 不包含通用部分. 如 http://skynology.com/api/1.0/files/fetch, 只传入 'files/fetch' 即可
 func (app *App) Call(url string, method string, data interface{}) (result map[string]interface{}, err *APIError) {
 	_url := fmt.Sprintf("%s/%s", app.baseURL, url)
 	method = strings.ToUpper(method)
